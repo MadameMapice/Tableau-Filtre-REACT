@@ -7,19 +7,58 @@ let produits = [
     { category: "Electronics", price: "$199.99", stocked: true, name: "Nexus 7" }
 ];
 
-function Container() {
-    return (
-
-    <div>
-         <Form/>
-         <Titres/>
-         <Tableau/>
-    </div>
-      
-    )
+class Container extends React.Component {
+    constructor(props){
+        super(props)
+        this.state = {texte:"",check:false,lesProduits:[...produits]}
+        this.chgCheck=this.chgCheck.bind(this)
+        this.chgTexte=this.chgTexte.bind(this)
+    }
+    chgTexte(event){
+        this.setState({texte:event.target.value},()=>{
+            this.setState({lesProduits:[...this.filtre()]})
+        })
+        
+    }
+    chgCheck(event){
+        this.setState({check:event.target.checked},()=>{
+            this.setState({lesProduits:[...this.filtre()]})
+        })
+        //console.log(this.filtre());
+    }
+    filtre() {
+        return produits.filter(elem => {
+            if(this.state.check==true){
+                return elem.name.indexOf(this.state.texte)!=-1 && elem.stocked==true
+            }
+            else {
+                return elem.name.indexOf(this.state.texte)!=-1
+            }
+        })
+    }
+    render() {
+        return (
+            <div className="conteneur">
+                <Form etat={this.state} chgT={this.chgTexte} chgC={this.chgCheck}/>
+                <Titres/>
+                <Tableau prods={this.state.lesProduits}/>
+            </div>
+        )
+    }
 }
+// function Container() {
+//     return (
 
-function Form () {
+//     <div>
+//          <Form etat={this.state} chgT={this.chgTexte} chgC={this.chgCheck}/>
+//          <Titres/>
+//          <Tableau prods={this.state.tabFiltre}/>
+//     </div>
+      
+//     )
+// }
+
+function Form (props) {
 
         return (
 
@@ -27,8 +66,8 @@ function Form () {
                 <h1>Chez Dédé y'a tout s'ky Fo</h1>
 
             <div className="titre flex">
-                <input type="text" placeholder="Filtres"/>
-                <input type="checkbox"/>Uniquement en stock
+                <input type="text" placeholder="Filtres" value={props.etat.texte} onChange={props.chgT}/>
+                <input type="checkbox" checked={props.etat.check} onChange={props.chgC}/>Uniquement en stock
             </div>
 
     </div>
@@ -50,14 +89,14 @@ function Titres () {
     }
 
 
-function Tableau() {
-    let lesCategories= [...new Map(produits.map(item => [item["category"], item])).values()];
+function Tableau(props) {
+    let lesCategories= [...new Map(props.prods.map(item => [item["category"], item])).values()];
 
         return (
             
         <div >
               
-              {lesCategories.map((elem, key) => <Categories key={key} nom={elem.category}/>)}
+              {lesCategories.map((elem, key) => <Categories key={key} nom={elem.category} prods={props.prods} />)}
               
           </div>
           
@@ -66,7 +105,7 @@ function Tableau() {
 
 
 function Categories(props){
-    let lesProduits= produits.filter(elem => elem.category == props.nom)
+    let lesProduits= props.prods.filter(elem => elem.category == props.nom)
 
     return (
             
